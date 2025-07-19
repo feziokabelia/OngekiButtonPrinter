@@ -22,7 +22,6 @@ def pygame_init(self):
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
         self.text.setVisible(False)
-        print(666)
         return True
     except pygame.error:  # 没有连接到手台
         self.text.setVisible(True)
