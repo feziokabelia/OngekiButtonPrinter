@@ -1,6 +1,6 @@
 import pygame
 
-
+output_file = "log_device.log"
 #  检测手台按键
 def detect():
     while True:
@@ -14,10 +14,18 @@ def detect():
 
 
 if __name__ == "__main__":
-    pygame.init()
-    if pygame.joystick.get_count() > 0:
-        joystick = pygame.joystick.Joystick(0)
-        joystick.init()
-        detect()
-    else:
-        print("未检测到手台")
+
+    try:
+        pygame.init()
+        if pygame.joystick.get_count() > 0:
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
+            detect()
+        else:
+            with open(output_file, "a", encoding="utf-8") as f:
+                f.write("未检测到手台")
+    except pygame.error as e:
+        with open(output_file, "a", encoding="utf-8") as f:
+            f.write(str(e))
+
+
