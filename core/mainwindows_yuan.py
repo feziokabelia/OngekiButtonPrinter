@@ -7,17 +7,17 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsS
 from PyQt6.QtGui import QPixmap, QImage, QColor, QBrush
 from PyQt6.QtCore import Qt, QTimer
 
-import conifg.settings
-from conifg.settings import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP
+import config.settings
+from config.settings import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP
 
-LW = conifg.settings.LW
-LR = conifg.settings.LR
-LG = conifg.settings.LG
-LB = conifg.settings.LB
-RW = conifg.settings.RW
-RR = conifg.settings.RR
-RG = conifg.settings.RG
-RB = conifg.settings.RB
+LW = config.settings.LW
+LR = config.settings.LR
+LG = config.settings.LG
+LB = config.settings.LB
+RW = config.settings.RW
+RR = config.settings.RR
+RG = config.settings.RG
+RB = config.settings.RB
 
 
 class ArcadeController(QMainWindow):
