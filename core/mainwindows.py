@@ -84,7 +84,7 @@ class ArcadeController(QMainWindow):
 
     def load_images(self):
         for btn, filename in IMAGE_MAP.items():
-            path = os.path.join("../jpgs", filename)
+            path = os.path.join("jpgs", filename)
             if os.path.exists(path):
                 pixmap = QPixmap(path)
                 if not pixmap.isNull():
@@ -95,14 +95,23 @@ class ArcadeController(QMainWindow):
                         Qt.TransformationMode.SmoothTransformation
                     )
 
+
         # 加载背景
-        bg_path = os.path.join("../jpgs", BACKGROUND_IMAGE)
+        bg_path = os.path.join("jpgs", BACKGROUND_IMAGE)
         self.scene.setBackgroundBrush(QBrush(QColor(0, 0, 0, 0)))  # RGBA: A=0 表示全透明.
         if os.path.exists(bg_path):
             bg_pixmap = QPixmap(bg_path)
             if not bg_pixmap.isNull():
-                bg_item = QGraphicsPixmapItem(bg_pixmap.scaled(400, 300))
+                # 使用平滑转换
+                scaled_pixmap = bg_pixmap.scaled(400, 300,
+                                                 Qt.AspectRatioMode.KeepAspectRatio,
+                                                 Qt.TransformationMode.SmoothTransformation)
+                bg_item = QGraphicsPixmapItem(scaled_pixmap)
+                bg_item.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
+                bg_item.setShapeMode(QGraphicsPixmapItem.ShapeMode.BoundingRectShape)
                 self.scene.addItem(bg_item)
+                self.bg_item_l0.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
+                self.bg_item_r0.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
                 self.scene.addItem(self.bg_item_l0)
                 self.scene.addItem(self.bg_item_r0)
                 self.scene.addItem(self.bg_item_swing)
@@ -113,6 +122,9 @@ class ArcadeController(QMainWindow):
             if btn in self.images:
                 item = QGraphicsPixmapItem(self.images[btn])
                 item.setPos(config["x"], config["y"])
+                # 平滑处理
+                item.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
+                item.setShapeMode(QGraphicsPixmapItem.ShapeMode.BoundingRectShape)
                 self.scene.addItem(item)
                 self.button_items[btn] = item
                 item.setVisible(False)
