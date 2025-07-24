@@ -66,7 +66,7 @@ def get_pos(position):
     return pos_image
 
 
-def get_sub_position(rotary0, rotary1):
+def get_sub_position(rotary0):  # 位置判断第二依据
     total_range = 65536  # 32768 - (-32768)
     sub_range_size = total_range / 20  # 3276.8
     sub_pos = int((rotary0 + 32768) // sub_range_size)  # 映射到0~19
@@ -112,8 +112,7 @@ def poll_joystick(self):  # 查询按键情况
     # 显示摇杆
     result = show_lever(self, data_hid, key_data, pressed_keys)
     pressed_keys = result[0]
-    pos_image = result[1]
-
+    last_lever_pos = result[1]
     for i in (LW, LR, LG, LB, RR, RG, RW, RB):
         current = False
         for ind in range(len(pressed_keys)):
@@ -133,7 +132,7 @@ def poll_joystick(self):  # 查询按键情况
         if current:
             if self.release_button[pressed_key] == 1:
                 continue
-            m_press(self, pressed_key, pressed_key_motion, diff1, diff2, pos_image)
+            m_press(self, pressed_key, pressed_key_motion, diff1, diff2, last_lever_pos)
         else:
             m_release(self, pressed_key, pressed_key_motion)
 
@@ -153,6 +152,7 @@ def poll_joystick(self):  # 查询按键情况
     if not self.is_show_bg_r0:
         self.bg_item_r0.setVisible(False)
 
+
 def read_hid(self):
     data = self.device.read(STRUCT_SIZE)
     if not data:
@@ -167,18 +167,14 @@ def read_hid(self):
     }
     return op
 
+
 def show_lever(self, data_hid, key_data, pressed_keys):
     result = []
     # 显示摇杆
     position = data_hid.get("pos")  # 摇杆位置
-    pos_image = get_pos(position)
-    sub_pos = get_sub_position(data_hid.get("sub_pos"), data_hid.get("pos"))
-    # print(sub_pos)
+    pos_image = get_pos(position)  # 摇杆位置的图片
+    sub_pos = get_sub_position(data_hid.get("sub_pos"))
 
-    if math.copysign(1, data_hid.get("sub_pos")) == 1:
-        analog = True
-    else:
-        analog = False
     is_l_buttons = False
     is_r_buttons = False
     release_button_i = 0
@@ -189,71 +185,47 @@ def show_lever(self, data_hid, key_data, pressed_keys):
                 is_l_buttons = True
         else:
             if self.release_button[i] == 1:
-                # print("右侧有键")
                 is_r_buttons = True
         release_button_i = release_button_i + 1
-    # print(f"{is_l_buttons}    {is_r_buttons}")
-    # print(is_l_buttons and not is_r_buttons)
-    # print(self.release_button.values())
-    # print(f"{is_l_buttons}    {is_r_buttons}")
-    # print("------------------------")
-    # print(f"{is_l_buttons != self.prev_l_buttons}  {is_r_buttons != self.prev_r_buttons}")
-    # print("*********************************")
-    if (is_l_buttons != self.prev_l_buttons) or (is_r_buttons != self.prev_r_buttons):
-        status = True  # 任意一个按钮状态变化，status 设为 True
-    else:
-        status = False
-    if is_l_buttons and is_l_buttons:
-        status = True
-    # print((is_l_buttons != self.prev_l_buttons) or (is_r_buttons != self.prev_r_buttons))
-    self.prev_l_buttons = is_l_buttons
-    self.prev_r_buttons = is_l_buttons
-    # print(f"{is_l_buttons}  {is_r_buttons}")
-    # print(status)
-    # 第一版 self.last_lever_pos != pos_image
+    last_lever_pos = self.last_lever_pos
     if self.last_lever_pos != position:  # 左侧有按键则不显示摇杆 右侧同
         if self.last_lever_pos != "":
             self.button_items["l_" + str(get_pos(self.last_lever_pos))].setVisible(False)
             self.button_items["r_" + str(get_pos(self.last_lever_pos))].setVisible(False)
-        # print(f"{is_l_buttons}  {is_r_buttons}")
+
         if is_l_buttons and is_r_buttons:  # 情况1 左右两侧都有按键
-            # print("情况1")
             self.button_items["l_" + pos_image].setVisible(False)
             self.button_items["r_" + pos_image].setVisible(False)
             self.bg_item_swing.setVisible(True)
         else:
             self.bg_item_swing.setVisible(False)
+
         if is_l_buttons and not is_r_buttons:  # 情况2 左侧有 右侧没有
-            # print("情况2")
-            # print("l_" + pos_image)
             self.is_show_bg_l0 = True
             self.is_left = False
             self.button_items["l_" + pos_image].setVisible(True)
             self.button_items["r_" + pos_image].setVisible(False)
         else:
             self.is_show_bg_l0 = False
+
         if not is_l_buttons and is_r_buttons:  # 情况3 右侧有 左侧没有
-            # print("情况3")
             self.is_show_bg_r0 = True
             self.is_left = True
             self.button_items["l_" + pos_image].setVisible(False)
             self.button_items["r_" + pos_image].setVisible(True)
         else:
             self.is_show_bg_r0 = False
+
         if not is_l_buttons and not is_r_buttons:  # 情况4 都没有
-            # print("情况4")
-            # print(self.is_left)
             if self.is_left:
-                # print("换右")
                 self.is_show_bg_r0 = True
                 self.button_items["r_" + pos_image].setVisible(True)  # 换默认右
             else:
-                # print("换左")
                 self.is_show_bg_l0 = True
                 self.button_items["l_" + pos_image].setVisible(True)  # 换默认左
         self.last_lever_pos = position
-        self.last_ana = analog
         self.first_down = True
+
     elif self.last_lever_pos == position:  # 摇杆不动 手放下
         if self.last_subpos == sub_pos:
             self.bg_item_swing.setVisible(True)
@@ -266,7 +238,7 @@ def show_lever(self, data_hid, key_data, pressed_keys):
     # print("l_" + pos_image)
     for switch_idx in range(2):  # 遍历左/右开关
         for bit_pos in range(16):  # 检查每一位
-            new_state = int(key_data[switch_idx][bit_pos])  # 注意：bits[0]是MSB（Bit15）
+            new_state = int(key_data[switch_idx][bit_pos])
             if switch_idx == 1 and bit_pos == 9:
                 if new_state == 0:
                     new_state = 1
@@ -286,25 +258,22 @@ def show_lever(self, data_hid, key_data, pressed_keys):
     if data_hid.get("lw") == 0:
         pressed_keys.append(LW)
     result.append(pressed_keys)
-    result.append(pos_image)
+    result.append(last_lever_pos)
     return result
 
 
-def m_press(self, pressed_key, pressed_key_motion, diff1, diff2, pos_image):  # 按下
+def m_press(self, pressed_key, pressed_key_motion, diff1, diff2, last_lever_pos):  # 按下
     self.release_button[pressed_key] = 1
     if pressed_key in (LW, LR, LG, LB):
-        self.button_items["r_" + pos_image].setVisible(False)
+        self.button_items["r_" + str(get_pos(self.last_lever_pos))].setVisible(False)
         self.bg_item_l0.setVisible(False)
     else:
-        self.button_items["l_" + pos_image].setVisible(False)
+        self.button_items["l_" + str(get_pos(self.last_lever_pos))].setVisible(False)
         self.bg_item_r0.setVisible(False)
 
     if pressed_key in self.button_items:
-        # print(f"press = {pressed_key}")
-        # print(f"release = {released_key}")
         self.button_items[pressed_key].setVisible(True)
         self.button_items[pressed_key_motion].setVisible(True)  # motion True
-        # print(f"{pressed_key} 显示")
 
         # 动作图片隐藏的逻辑判断
         if pressed_key in (LW, LR, LG, LB):
@@ -322,18 +291,13 @@ def m_press(self, pressed_key, pressed_key_motion, diff1, diff2, pos_image):  # 
                 # 同在左 或 同在右
                 if diff1 or diff2:  # 不同边
                     self.button_items[self.last_button].setVisible(False)  # motion False
-        # self.last_button = pressed_key_motion
 
         if pressed_key_motion in self.left_button:
-            # arr = self.last_left_button_arr
-            # self.last_left_button_arr[self.last_left_button_i] = pressed_key
             for k in range(len(self.last_left_button_arr)):
                 if self.last_left_button_arr[k] == "":
                     self.last_left_button_arr[k] = pressed_key
                     break
-            # self.last_left_button_i = self.last_left_button_i + 1
         else:
-            # arr = self.last_right_button_arr
             for k in range(len(self.last_right_button_arr)):
                 if self.last_right_button_arr[k] == "":
                     self.last_right_button_arr[k] = pressed_key
@@ -344,7 +308,6 @@ def m_release(self, pressed_key, pressed_key_motion):
     null_count = 0  # 记录last_button_arr有多少“”
     if pressed_key in self.button_items:
         if self.release_button[pressed_key] == 1:
-            # print(f"{pressed_key} 释放")
             left = pressed_key_motion in self.left_button
 
             if left:

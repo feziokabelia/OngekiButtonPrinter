@@ -78,8 +78,6 @@ class ArcadeController(QMainWindow):
         self.left_show = ""
         self.right_show = ""
         self.last_lever_pos = ""
-        self.prev_l_buttons = False
-        self.prev_r_buttons = False
         self.is_show_bg_l0 = False
         self.is_show_bg_r0 = False
         self.is_left = True
