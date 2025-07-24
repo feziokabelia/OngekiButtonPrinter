@@ -1,5 +1,5 @@
 import sys
-from core.mainwindows import ArcadeController
+from core.mainwindows_HID import ArcadeController  # 选择一个版本 这里选择HID
 from utils import logger
 
 

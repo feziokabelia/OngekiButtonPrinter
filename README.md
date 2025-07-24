@@ -12,5 +12,5 @@ Hangeki
 ### 计划中：
 1.适配nageki  
 2.适配Oncontroller（Winusb）  
-2.添加摇杆功能
+2.为所有手台版本添加摇杆功能(现在只有mygeki)
 
