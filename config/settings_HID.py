@@ -12,6 +12,10 @@ try:
     L_MAX = int(config.get('boundary', 'L_MAX'))
     R_MAX = int(config.get('boundary', 'R_MAX'))
     # 摇杆边界值设定 [L_MAX L2] [L2 L1] [L1 R1] [R1 R2] [R2 R_MAX]
+    if L_MAX < R_MAX:
+        temp = L_MAX
+        L_MAX = R_MAX
+        R_MAX = temp
     space = math.ceil((L_MAX - R_MAX) / 5)
     L_2 = L_MAX - space
     L_1 = L_2 - space
