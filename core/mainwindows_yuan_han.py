@@ -6,18 +6,19 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsS
     QLabel
 from PyQt6.QtGui import QPixmap, QImage, QColor, QBrush
 from PyQt6.QtCore import Qt, QTimer
+from pynput import mouse
 
 import config.settings
-from config.settings import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP
+from config.settings_yuangeki import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP, L_MAX, R_MAX
 
-LW = config.settings.LW
-LR = config.settings.LR
-LG = config.settings.LG
-LB = config.settings.LB
-RW = config.settings.RW
-RR = config.settings.RR
-RG = config.settings.RG
-RB = config.settings.RB
+LW = config.settings_yuangeki.LW
+LR = config.settings_yuangeki.LR
+LG = config.settings_yuangeki.LG
+LB = config.settings_yuangeki.LB
+RW = config.settings_yuangeki.RW
+RR = config.settings_yuangeki.RR
+RG = config.settings_yuangeki.RG
+RB = config.settings_yuangeki.RB
 
 
 class ArcadeController(QMainWindow):
@@ -39,9 +40,9 @@ class ArcadeController(QMainWindow):
         # self.relink_count = 0
         # self.relink_count_text = QGraphicsTextItem("")
         # self.relink_count_text.setDefaultTextColor(QColor(245, 163, 118))
-        bg_path_r0 = os.path.join("../jpgs", "r_0.png")
-        bg_item_swing = os.path.join("../jpgs", "swing.png")
-        bg_path_l0 = os.path.join("../jpgs", "l_0.png")
+        bg_path_r0 = os.path.join("jpgs", "r_0.png")
+        bg_item_swing = os.path.join("jpgs", "swing.png")
+        bg_path_l0 = os.path.join("jpgs", "l_0.png")
         self.bg_item_r0 = QGraphicsPixmapItem(QPixmap(bg_path_r0).scaled(400, 300))
         self.bg_item_swing = QGraphicsPixmapItem(QPixmap(bg_item_swing).scaled(400, 300))
         self.bg_item_l0 = QGraphicsPixmapItem(QPixmap(bg_path_l0).scaled(400, 300))
@@ -63,6 +64,14 @@ class ArcadeController(QMainWindow):
         self.last_right_button_i = 0
         self.left_show = ""
         self.right_show = ""
+        self.last_lever_pos = -999
+        self.is_show_bg_l0 = False
+        self.is_show_bg_r0 = False
+        self.is_left = True
+        self.last_ana = 0
+        self.first_down = True
+        self.last_subpos = 0
+        self.x = (L_MAX + R_MAX) / 2
 
         # 加载资源
         self.button_items = {}
@@ -79,6 +88,8 @@ class ArcadeController(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(lambda: poll_joystick(self))
         self.timer.start(50)
+        self.listener = mouse.Listener(on_move=self.on_move)
+        self.listener.start()
 
     def load_images(self):
         for btn, filename in IMAGE_MAP.items():
@@ -92,7 +103,6 @@ class ArcadeController(QMainWindow):
                         Qt.AspectRatioMode.KeepAspectRatio,
                         Qt.TransformationMode.SmoothTransformation
                     )
-
 
         # 加载背景
         bg_path = os.path.join("jpgs", BACKGROUND_IMAGE)
@@ -126,3 +136,6 @@ class ArcadeController(QMainWindow):
                 self.scene.addItem(item)
                 self.button_items[btn] = item
                 item.setVisible(False)
+
+    def on_move(self, x):
+        self.x = (x // 10) * 10  # 防抖动
