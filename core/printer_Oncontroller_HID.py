@@ -5,26 +5,26 @@ import sys
 from ctypes import cdll
 
 import pygame
-import config.settings_IO4_HID
+import config.settings_Oncontroller_HID
 
-LW = config.settings_IO4_HID.LW
-LR = config.settings_IO4_HID.LR
-LG = config.settings_IO4_HID.LG
-LB = config.settings_IO4_HID.LB
-RW = config.settings_IO4_HID.RW
-RR = config.settings_IO4_HID.RR
-RG = config.settings_IO4_HID.RG
-RB = config.settings_IO4_HID.RB
-L_MAX = config.settings_IO4_HID.L_MAX
-L_1 = config.ssettings_IO4_HID.L_1
-L_2 = config.settings_IO4_HID.L_2
-R_MAX = config.settings_IO4_HID.R_MAX
-R_1 = config.settings_IO4_HID.R_1
-R_2 = config.settings_IO4_HID.R_2
-VENDOR_ID = config.settings_IO4_HID.VENDOR_ID
-PRODUCT_ID = config.settings_IO4_HID.PRODUCT_ID
-key_map = config.settings_IO4_HID.key_map
-dll_path = config.settings_IO4_HID.dll_path
+LW = config.settings_Oncontroller_HID.LW
+LR = config.settings_Oncontroller_HID.LR
+LG = config.settings_Oncontroller_HID.LG
+LB = config.settings_Oncontroller_HID.LB
+RW = config.settings_Oncontroller_HID.RW
+RR = config.settings_Oncontroller_HID.RR
+RG = config.settings_Oncontroller_HID.RG
+RB = config.settings_Oncontroller_HID.RB
+L_MAX = config.settings_Oncontroller_HID.L_MAX
+L_1 = config.settings_Oncontroller_HID.L_1
+L_2 = config.settings_Oncontroller_HID.L_2
+R_MAX = config.settings_Oncontroller_HID.R_MAX
+R_1 = config.settings_Oncontroller_HID.R_1
+R_2 = config.settings_Oncontroller_HID.R_2
+VENDOR_ID = config.settings_Oncontroller_HID.VENDOR_ID
+PRODUCT_ID = config.settings_Oncontroller_HID.PRODUCT_ID
+key_map = config.settings_Oncontroller_HID.key_map
+dll_path = config.settings_Oncontroller_HID.dll_path
 
 OUTPUT_T_FORMAT = '<8h 4h 2B 2B 2H 2B 29x'  # 小端字节序，2B 2B 表示 2个 coin_data_t（每个2字节）
 STRUCT_SIZE = struct.calcsize(OUTPUT_T_FORMAT)
@@ -39,16 +39,6 @@ except Exception as e:
         file.write(str(e))
     print(f"加载失败: {e}")
     sys.exit()
-
-
-def parse_output_t(data: bytes):
-    """解析输出数据，仅提取指定字段"""
-    unpacked = struct.unpack(OUTPUT_T_FORMAT, data)
-    return {
-        'rotary': unpacked[8:12],  # 后续4个int16_t (旋转编码器)
-        'switches': unpacked[16:18],  # 2个uint16_t (开关状态)
-        'system_status': unpacked[18]  # uint8_t (系统状态)
-    }
 
 
 def get_pos(position):
@@ -66,10 +56,10 @@ def get_pos(position):
     return pos_image
 
 
-def get_sub_position(rotary0):  # 位置判断第二依据
-    total_range = 65536  # 32768 - (-32768)
+def get_sub_position(rotary0):
+    total_range = 255
     sub_range_size = total_range / 20  # 3276.8
-    sub_pos = int((rotary0 + 32768) // sub_range_size)  # 映射到0~19
+    sub_pos = int(rotary0 // sub_range_size)  # 映射到0~19
     return min(max(sub_pos, 0), 19)  # 限制在0~19
 
 
@@ -101,14 +91,7 @@ def poll_joystick(self):  # 查询按键情况
     if data_hid is None:
         return
     else:
-        index = 0
-        key_data = [[0 for _ in range(16)] for _ in range(2)]
-        for switch_idx, switch in enumerate(data_hid.get("key")):
-            bits = switch[2:]  # 去掉 '0b' 前缀
-            for bit_pos in range(16):
-                bit_value = bits[bit_pos]  # 从左到右依次为 Bit0 → Bit15
-                key_data[index][bit_pos] = bit_value
-            index = index + 1
+        key_data = data_hid.get("key")
     # 显示摇杆
     result = show_lever(self, data_hid, key_data, pressed_keys)
     pressed_keys = result[0]
@@ -154,16 +137,13 @@ def poll_joystick(self):  # 查询按键情况
 
 
 def read_hid(self):
-    data = self.device.read(STRUCT_SIZE)
-    if not data:
+    current_data = self.device.read(5)
+    if not current_data:
         return None
-    current_data = parse_output_t(bytes(data))
-    switches_str = [f"0b{s:016b}" for s in current_data['switches']]
     op = {
-        "sub_pos": current_data['rotary'][0],  # int
-        "pos": current_data['rotary'][1],  # int
-        "key": switches_str,  # list
-        "lw": current_data['system_status']  # int
+        "sub_pos": current_data[2],  # int
+        "pos": current_data[1],  # int
+        "key": f"{current_data[3]:08b}",  # str
     }
     return op
 
@@ -172,8 +152,9 @@ def show_lever(self, data_hid, key_data, pressed_keys):
     result = []
     # 显示摇杆
     position = data_hid.get("pos")  # 摇杆位置
-    pos_image = get_pos(position)  # 摇杆位置的图片
+    pos_image = get_pos(position)
     sub_pos = get_sub_position(data_hid.get("sub_pos"))
+    # print(sub_pos)
 
     is_l_buttons = False
     is_r_buttons = False
@@ -185,6 +166,7 @@ def show_lever(self, data_hid, key_data, pressed_keys):
                 is_l_buttons = True
         else:
             if self.release_button[i] == 1:
+                # print("右侧有键")
                 is_r_buttons = True
         release_button_i = release_button_i + 1
     last_lever_pos = self.last_lever_pos
@@ -224,7 +206,6 @@ def show_lever(self, data_hid, key_data, pressed_keys):
         else:
             self.is_show_bg_r0 = False
         if not is_l_buttons and not is_r_buttons:  # 情况4 都没有
-
             # print("情况4")
             # print(self.is_left)
             if self.is_left:
@@ -249,27 +230,14 @@ def show_lever(self, data_hid, key_data, pressed_keys):
             self.button_items["r_" + str(get_pos(self.last_lever_pos))].setVisible(False)
         self.last_subpos = sub_pos
     # print("l_" + pos_image)
-    for switch_idx in range(2):  # 遍历左/右开关
-        for bit_pos in range(16):  # 检查每一位
-            new_state = int(key_data[switch_idx][bit_pos])
-            if switch_idx == 1 and bit_pos == 9:
-                if new_state == 0:
-                    new_state = 1
-                else:
-                    new_state = 0
-            if new_state == 1:
-                if switch_idx == 0:
-                    key_map_l = key_map.get(switch_idx)
-                    for i in key_map_l.keys():
-                        if bit_pos == i:
-                            pressed_keys.append(key_map_l.get(i))
-                else:
-                    key_map_r = key_map.get(switch_idx)
-                    for i in key_map_r.keys():
-                        if bit_pos == i:
-                            pressed_keys.append(key_map_r.get(i))
-    if data_hid.get("lw") == 0:
-        pressed_keys.append(LW)
+
+    for bit_pos in range(len(key_data)):  # 检查每一位
+        new_state = int(key_data[bit_pos])
+        if new_state == 1:
+            for i in key_map.keys():
+                if bit_pos == i:
+                    print(i)
+                    pressed_keys.append(key_map.get(i))
     result.append(pressed_keys)
     result.append(last_lever_pos)
     return result

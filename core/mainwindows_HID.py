@@ -1,6 +1,7 @@
 import os
 import sys
 from ctypes import cdll
+# OR import from core.printer_Oncontroller_HID import poll_joystick
 from core.printer_HID import poll_joystick
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
@@ -8,18 +9,18 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsS
     QLabel
 from PyQt6.QtGui import QPixmap, QImage, QColor, QBrush
 from PyQt6.QtCore import Qt, QTimer
+# OR change config.settings_IO4_HID to config.settings_Oncontroller_HID
+import config.settings_IO4_HID
+from config.settings_IO4_HID import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP, dll_path, VENDOR_ID, PRODUCT_ID
 
-import config.settings_HID
-from config.settings_HID import BACKGROUND_IMAGE, BUTTON_CONFIG, IMAGE_MAP, dll_path, VENDOR_ID, PRODUCT_ID
-
-LW = config.settings_HID.LW
-LR = config.settings_HID.LR
-LG = config.settings_HID.LG
-LB = config.settings_HID.LB
-RW = config.settings_HID.RW
-RR = config.settings_HID.RR
-RG = config.settings_HID.RG
-RB = config.settings_HID.RB
+LW = config.settings_IO4_HID.LW
+LR = config.settings_IO4_HID.LR
+LG = config.settings_IO4_HID.LG
+LB = config.settings_IO4_HID.LB
+RW = config.settings_IO4_HID.RW
+RR = config.settings_IO4_HID.RR
+RG = config.settings_IO4_HID.RG
+RB = config.settings_IO4_HID.RB
 
 try:
     cdll.LoadLibrary(dll_path)  # 使用绝对路径
