@@ -189,52 +189,65 @@ def show_lever(self, data_hid, key_data, pressed_keys):
         release_button_i = release_button_i + 1
     last_lever_pos = self.last_lever_pos
     if self.last_lever_pos != position:  # 左侧有按键则不显示摇杆 右侧同
+        self.close_swing()
         if self.last_lever_pos != "":
             self.button_items["l_" + str(get_pos(self.last_lever_pos))].setVisible(False)
             self.button_items["r_" + str(get_pos(self.last_lever_pos))].setVisible(False)
-
+        # print(f"{is_l_buttons}  {is_r_buttons}")
+        if self.last_button != "":
+            self.button_items[self.last_button].setVisible(False)
         if is_l_buttons and is_r_buttons:  # 情况1 左右两侧都有按键
+            # print("情况1")
             self.button_items["l_" + pos_image].setVisible(False)
             self.button_items["r_" + pos_image].setVisible(False)
-            self.bg_item_swing.setVisible(True)
+            self.button_items[pos_image].setVisible(True)
+            # self.bg_item_swing.setVisible(True)
         else:
             self.bg_item_swing.setVisible(False)
-
         if is_l_buttons and not is_r_buttons:  # 情况2 左侧有 右侧没有
+            # print("情况2")
+            # print("l_" + pos_image)
             self.is_show_bg_l0 = True
             self.is_left = False
+            self.button_items[pos_image].setVisible(False)
             self.button_items["l_" + pos_image].setVisible(True)
             self.button_items["r_" + pos_image].setVisible(False)
         else:
             self.is_show_bg_l0 = False
-
         if not is_l_buttons and is_r_buttons:  # 情况3 右侧有 左侧没有
+            # print("情况3")
             self.is_show_bg_r0 = True
             self.is_left = True
+            self.button_items[pos_image].setVisible(False)
             self.button_items["l_" + pos_image].setVisible(False)
             self.button_items["r_" + pos_image].setVisible(True)
         else:
             self.is_show_bg_r0 = False
-
         if not is_l_buttons and not is_r_buttons:  # 情况4 都没有
+
+            # print("情况4")
+            # print(self.is_left)
             if self.is_left:
+                # print("换右")
                 self.is_show_bg_r0 = True
+                self.button_items[pos_image].setVisible(False)
                 self.button_items["r_" + pos_image].setVisible(True)  # 换默认右
             else:
+                # print("换左")
                 self.is_show_bg_l0 = True
+                self.button_items[pos_image].setVisible(False)
                 self.button_items["l_" + pos_image].setVisible(True)  # 换默认左
         self.last_lever_pos = position
         self.first_down = True
-
     elif self.last_lever_pos == position:  # 摇杆不动 手放下
         if self.last_subpos == sub_pos:
-            self.bg_item_swing.setVisible(True)
+            # self.bg_item_swing.setVisible(True)
+            self.button_items[pos_image].setVisible(True)
             self.is_show_bg_r0 = True
             self.is_show_bg_l0 = True
             self.button_items["l_" + str(get_pos(self.last_lever_pos))].setVisible(False)
             self.button_items["r_" + str(get_pos(self.last_lever_pos))].setVisible(False)
         self.last_subpos = sub_pos
-
     # print("l_" + pos_image)
     for switch_idx in range(2):  # 遍历左/右开关
         for bit_pos in range(16):  # 检查每一位

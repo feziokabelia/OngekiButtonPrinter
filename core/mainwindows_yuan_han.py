@@ -1,5 +1,5 @@
 import os
-from core.printer_yuan import poll_joystick
+from core.printer_yuan import poll_joystick  # choose printer_yuan or printer_han
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, \
     QGraphicsTextItem, \
@@ -139,3 +139,10 @@ class ArcadeController(QMainWindow):
 
     def on_move(self, x):
         self.x = (x // 10) * 10  # 防抖动
+
+    def close_swing(self):
+        self.button_items["lever_0"].setVisible(False)
+        self.button_items["lever_1"].setVisible(False)
+        self.button_items["lever_-1"].setVisible(False)
+        self.button_items["lever_2"].setVisible(False)
+        self.button_items["lever_-2"].setVisible(False)

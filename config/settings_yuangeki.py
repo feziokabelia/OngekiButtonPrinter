@@ -22,7 +22,6 @@ except configparser.Error as e:
     print(e)
     print("fail to read config.ini")
 
-
 LW = 's'
 LR = 'd'
 LG = 'f'
@@ -68,6 +67,12 @@ IMAGE_MAP = {
     "r_lever_2": "r_swing_2.png",
     "r_lever_-1": "r_swing_-1.png",
     "r_lever_-2": "r_swing_-2.png",
+
+    "lever_0": "swing_0.png",
+    "lever_1": "swing_1.png",
+    "lever_-1": "swing_-1.png",
+    "lever_2": "swing_2.png",
+    "lever_-2": "swing_-2.png"
 }
 
 BACKGROUND_IMAGE = "waiting.png"
@@ -101,6 +106,11 @@ BUTTON_CONFIG = {
     "r_lever_2": {"x": 0, "y": 0, "width": 400, "height": 300},
     "r_lever_-1": {"x": 0, "y": 0, "width": 400, "height": 300},
     "r_lever_-2": {"x": 0, "y": 0, "width": 400, "height": 300},
+    "lever_0": {"x": 0, "y": 0, "width": 400, "height": 300},  # 从左到右依次-2 -1 0 1 2
+    "lever_1": {"x": 0, "y": 0, "width": 400, "height": 300},
+    "lever_2": {"x": 0, "y": 0, "width": 400, "height": 300},
+    "lever_-1": {"x": 0, "y": 0, "width": 400, "height": 300},
+    "lever_-2": {"x": 0, "y": 0, "width": 400, "height": 300},
 }
 
 key_states = {key: False for key in [LW, LR, LG, LB, RR, RG, RB, RW]}

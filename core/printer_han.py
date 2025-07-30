@@ -1,15 +1,15 @@
 import keyboard
-from config.settings_yuangeki import key_states, L_MAX, L_2, L_1, R_MAX, R_2, R_1
-import config.settings_yuangeki
+from config.settings_hangeki import key_states, L_MAX, L_2, L_1, R_MAX, R_2, R_1
+import config.settings_hangeki
 
-LW = config.settings_yuangeki.LW
-LR = config.settings_yuangeki.LR
-LG = config.settings_yuangeki.LG
-LB = config.settings_yuangeki.LB
-RW = config.settings_yuangeki.RW
-RR = config.settings_yuangeki.RR
-RG = config.settings_yuangeki.RG
-RB = config.settings_yuangeki.RB
+LW = config.settings_hangeki.LW
+LR = config.settings_hangeki.LR
+LG = config.settings_hangeki.LG
+LB = config.settings_hangeki.LB
+RW = config.settings_hangeki.RW
+RR = config.settings_hangeki.RR
+RG = config.settings_hangeki.RG
+RB = config.settings_hangeki.RB
 
 
 def get_pos(position):

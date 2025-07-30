@@ -175,6 +175,13 @@ class ArcadeController(QMainWindow):
                 self.button_items[btn] = item
                 item.setVisible(False)
 
+    def close_swing(self):
+        self.button_items["lever_0"].setVisible(False)
+        self.button_items["lever_1"].setVisible(False)
+        self.button_items["lever_-1"].setVisible(False)
+        self.button_items["lever_2"].setVisible(False)
+        self.button_items["lever_-2"].setVisible(False)
+
     def relink(self):
         self.relink_timer = QTimer(self)  # 初始化定时器
         self.relink_timer.timeout.connect(self.try_init_joystick)
