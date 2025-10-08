@@ -145,6 +145,26 @@ def read_hid(self):
         "pos": current_data[1],  # int
         "key": f"{current_data[3]:08b}",  # str
     }
+    '''
+    # 如果在device.read(5)未响应 使用以下代码段
+    current_data = self.device.read(64)
+        if not current_data:
+            return None
+
+        binary_chars = []
+        for pos in button_positions:
+            if current_data[pos] == 0x01:  # 按键按下
+                binary_chars.append('1')
+            else:  # 按键释放
+                binary_chars.append('0')
+
+        op = {
+            "sub_pos": current_data[22],  # int
+            "pos": current_data[21],  # int
+            "key": ''.join(binary_chars),  # str
+        }
+        return op
+    '''
     return op
 
 
